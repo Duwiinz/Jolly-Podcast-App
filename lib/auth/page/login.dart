@@ -2,7 +2,6 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:jolly_podcast/app_startup.dart';
 import 'package:jolly_podcast/auth/cubit/auth_cubit.dart';
 import 'package:jolly_podcast/auth/cubit/auth_state.dart';
 import 'package:jolly_podcast/auth/route/routes.dart';
@@ -19,10 +18,7 @@ class LoginPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<AuthCubit>(
-      create: (_) => getIt<AuthCubit>(),
-      child: const _LoginView(),
-    );
+    return const _LoginView(); // ✅ use global AuthCubit from main.dart
   }
 }
 
@@ -37,16 +33,15 @@ class _LoginViewState extends State<_LoginView> {
   final _formKey = GlobalKey<FormState>();
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool _obscurePassword = true;
 
   final FocusNode _phoneFocus = FocusNode();
   final FocusNode _passwordFocus = FocusNode();
 
-  // keep UI fixed, but scroll inside form area when keyboard covers it
-  final ScrollController _formScroll = ScrollController();
+  final ScrollController _scrollController = ScrollController();
 
   bool _isButtonClicked = false;
   bool _isLoading = false;
-
 
   @override
   void dispose() {
@@ -54,17 +49,16 @@ class _LoginViewState extends State<_LoginView> {
     _passwordController.dispose();
     _phoneFocus.dispose();
     _passwordFocus.dispose();
-    _formScroll.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
-  void _scrollToBottomOfForm() {
-    // When keyboard opens and a field is focused, make sure bottom widgets are visible
+  void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!_formScroll.hasClients) return;
-      _formScroll.animateTo(
-        _formScroll.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 220),
+      if (!_scrollController.hasClients) return;
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 250),
         curve: Curves.easeOut,
       );
     });
@@ -72,8 +66,10 @@ class _LoginViewState extends State<_LoginView> {
 
   @override
   Widget build(BuildContext context) {
+    final keyboard = MediaQuery.of(context).viewInsets.bottom;
+
     return Scaffold(
-      resizeToAvoidBottomInset: false, // prevents ANY layout resizing
+      resizeToAvoidBottomInset: true,
       body: Stack(
         fit: StackFit.expand,
         children: [
@@ -114,126 +110,152 @@ class _LoginViewState extends State<_LoginView> {
               return GestureDetector(
                 onTap: () => FocusScope.of(context).unfocus(),
                 child: SafeArea(
-                  child: Stack(
-                    children: [
-                      /// CENTER CONTENT (logo + text)
-                      Center(
-                        child: Transform.translate(
-                          offset: Offset(
-                            0,
-                            -170.h,
-                          ), // move up (increase value to move higher)
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Image.asset(
-                                "assets/images/onboardingLogo.png",
-                                width: 210.w,
-                                height: 108.h,
+                  child: SingleChildScrollView(
+                    controller: _scrollController,
+                    keyboardDismissBehavior:
+                        ScrollViewKeyboardDismissBehavior.onDrag,
+                    padding: EdgeInsets.fromLTRB(
+                      16.w,
+                      0,
+                      16.w,
+                      keyboard + 16.h,
+                    ),
+                    child: Column(
+                      children: [
+                        SizedBox(height: 60.h),
+
+                        // ✅ Logo + text
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Image.asset(
+                              "assets/images/onboardingLogo.png",
+                              width: 210.w,
+                              height: 108.h,
+                            ),
+                            SizedBox(height: 5.h),
+                            Text(
+                              "PODCASTS FOR\nAFRICA, BY AFRICANS",
+                              textAlign: TextAlign.center,
+                              style: customTextStyle(
+                                context,
+                                26,
+                                AppColors.color2,
+                                FontWeight.w800,
+                                1.3,
                               ),
-                              SizedBox(height: 5.h),
-                              Text(
-                                "PODCASTS FOR\nAFRICA, BY AFRICANS",
-                                textAlign: TextAlign.center,
-                                style: customTextStyle(
-                                  context,
-                                  26,
-                                  AppColors.color2,
-                                  FontWeight.w800,
-                                  1.3,
+                            ),
+                          ],
+                        ),
+
+                        SizedBox(height: 60.h),
+
+                        // ✅ Form block
+                        Form(
+                          key: _formKey,
+                          autovalidateMode: _isButtonClicked
+                              ? AutovalidateMode.always
+                              : AutovalidateMode.disabled,
+                          child: Column(
+                            children: [
+                              CustomTextFormField(
+                                controller: _phoneController,
+                                focusNode: _phoneFocus,
+                                keyboardType: TextInputType.phone,
+                                maxLength: 11,
+                                counterText: "",
+                                hintText: "Enter your phone number",
+                                prefixIcon: Image.asset(
+                                  "assets/images/prefixIcon.png",
+                                ),
+                                validator: Validator.validateMobile,
+                                borderRadiusPassed: 27,
+                                contentPadding: EdgeInsets.symmetric(
+                                  vertical: 14.h,
+                                  horizontal: 14.w,
+                                ),
+                                // onTap: () {
+                                //   _scrollToBottom();
+                                // },
+                                onChanged: (_) {
+                                  // optional
+                                },
+                              ),
+                              SizedBox(height: 15.h),
+
+                              CustomTextFormField(
+                                controller: _passwordController,
+                                focusNode: _passwordFocus,
+                                obscureText: _obscurePassword,
+                                keyboardType: TextInputType.text,
+                                maxLength: 20,
+                                counterText: "",
+                                hintText: "Enter password",
+                                validator: Validator.isPasswordValid,
+                                borderRadiusPassed: 27,
+                                contentPadding: EdgeInsets.symmetric(
+                                  vertical: 14.h,
+                                  horizontal: 14.w,
+                                ),
+                                suffixIcon: GestureDetector(
+                                  onTap: () {
+                                    setState(
+                                      () =>
+                                          _obscurePassword = !_obscurePassword,
+                                    );
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(12),
+                                    child: Icon(
+                                      _obscurePassword
+                                          ? Icons.visibility_off
+                                          : Icons.visibility,
+                                      color: Colors.black.withOpacity(0.7),
+                                    ),
+                                  ),
+                                ),
+
+                                onTap: _scrollToBottom,
+                              ),
+
+                              SizedBox(height: 15.h),
+
+                              _isLoading
+                                  ? const CircularProgressIndicator()
+                                  : CustomButton(
+                                      text: "Login",
+                                      containerColor: AppColors.color33,
+                                      onClick: _onLogin,
+                                    ),
+
+                              SizedBox(height: 10.h),
+
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.pushNamed(
+                                    context,
+                                    AuthRoutes.requestOtpPage,
+                                  );
+                                },
+                                child: Text(
+                                  "Don't have an account, Signup",
+                                  textAlign: TextAlign.center,
+                                  style: customTextStyle(
+                                    context,
+                                    12,
+                                    AppColors.color2,
+                                    FontWeight.w400,
+                                    1.3,
+                                  ),
                                 ),
                               ),
+
+                              SizedBox(height: 12.h),
                             ],
                           ),
                         ),
-                      ),
-
-                      /// BOTTOM FORM (fixed position; scrolls internally when keyboard covers it)
-                      Align(
-                        alignment: Alignment.bottomCenter,
-                        child: SizedBox(
-                          height: 435.h, // fixed height so it never shifts
-                          child: SingleChildScrollView(
-                            controller: _formScroll,
-                            padding: EdgeInsets.symmetric(horizontal: 16.w),
-                            child: Form(
-                              key: _formKey,
-                              autovalidateMode: _isButtonClicked
-                                  ? AutovalidateMode.always
-                                  : AutovalidateMode.disabled,
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  CustomTextFormField(
-                                    controller: _phoneController,
-                                    focusNode: _phoneFocus,
-                                    keyboardType: TextInputType.phone,
-                                    maxLength: 11,
-                                    counterText: "",
-                                    hintText: "Enter your phone number",
-                                    prefixIcon: Image.asset(
-                                      "assets/images/prefixIcon.png",
-                                    ),
-                                    validator: Validator.validateMobile,
-                                    borderRadiusPassed: 27,
-                                    contentPadding: EdgeInsets.symmetric(
-                                      vertical: 14.h,
-                                      horizontal: 14.w,
-                                    ),
-                                    onTap: _scrollToBottomOfForm,
-                                  ),
-                                  SizedBox(height: 15.h),
-                                  CustomTextFormField(
-                                    controller: _passwordController,
-                                    focusNode: _passwordFocus,
-                                    keyboardType: TextInputType.text,
-                                    maxLength: 20,
-                                    counterText: "",
-                                    hintText: "Enter password",
-                                    validator: Validator.isPasswordValid,
-                                    borderRadiusPassed: 27,
-                                    contentPadding: EdgeInsets.symmetric(
-                                      vertical: 14.h,
-                                      horizontal: 14.w,
-                                    ),
-                                    onTap: _scrollToBottomOfForm,
-                                  ),
-                                  SizedBox(height: 15.h),
-                                  _isLoading
-                                      ? const CircularProgressIndicator()
-                                      : CustomButton(
-                                          text: "Login",
-                                          containerColor: AppColors.color33,
-                                          onClick: _onLogin,
-                                        ),
-                                  SizedBox(height: 10.h),
-                                  GestureDetector(
-                                    onTap: () {
-                                      Navigator.pushNamed(
-                                        context,
-                                        AuthRoutes.requestOtpPage,
-                                      );
-                                    },
-                                    child: Text(
-                                      "Already have an account, Login",
-                                      textAlign: TextAlign.center,
-                                      style: customTextStyle(
-                                        context,
-                                        12,
-                                        AppColors.color2,
-                                        FontWeight.w400,
-                                        1.3,
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(height: 12.h),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               );

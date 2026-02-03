@@ -17,5 +17,7 @@ class ApiRoutes {
   static const String trendingEpisodes = '$baseUrl/api/episodes/trending';
 
   static const String editorsPickEpisodes = '$baseUrl/api/episodes/editor-pick';
+
+  static const String logout = '$baseUrl/api/auth/logout';
 }
 

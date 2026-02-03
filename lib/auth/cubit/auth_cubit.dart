@@ -41,4 +41,21 @@ class AuthCubit extends Cubit<AuthState> {
       emit(AuthError(e.toString()));
     }
   }
+
+  Future<void> logout() async {
+  emit(AuthLoggingOut());
+
+  try {
+    await authService.logout();
+  } catch (e) {
+    // Even if server says 401, we still log user out locally
+    log('[AuthCubit] logout error (ignored): $e');
+  } finally {
+    await authService.client.prefs.clearSession();
+    // If you store user locally, clear it too:
+    // await authService.client.prefs.clearUser();
+
+    emit(AuthLoggedOut());
+  }
+}
 }

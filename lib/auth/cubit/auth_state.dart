@@ -22,3 +22,7 @@ class AuthAuthenticated extends AuthState {
   AuthAuthenticated(this.user);
 }
 
+class AuthLoggingOut extends AuthState {}
+
+class AuthLoggedOut extends AuthState {}
+

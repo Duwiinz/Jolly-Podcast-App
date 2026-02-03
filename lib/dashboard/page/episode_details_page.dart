@@ -306,34 +306,40 @@ class _EpisodeDetailsPageState extends State<EpisodeDetailsPage> {
 
                       const SizedBox(height: 14),
 
-                      // Action pills row
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          _PillButton(
-                            icon: Icons.queue_music,
-                            text: "Add to queue",
-                            onTap: () {
-                              // TODO
-                            },
+                      // ✅ Action pills row (scrollable – prevents right overflow)
+                      SizedBox(
+                        height: 44,
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          physics: const BouncingScrollPhysics(),
+                          child: Row(
+                            children: [
+                              _PillButton(
+                                icon: Icons.queue_music,
+                                text: "Add to queue",
+                                onTap: () {
+                                  // TODO
+                                },
+                              ),
+                              const SizedBox(width: 10),
+                              _PillButton(
+                                icon: Icons.favorite_border,
+                                text: "Save",
+                                onTap: () {
+                                  // TODO
+                                },
+                              ),
+                              const SizedBox(width: 10),
+                              _PillButton(
+                                icon: Icons.share_outlined,
+                                text: "Share episode",
+                                onTap: () {
+                                  // TODO: use share_plus if you want
+                                },
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 10),
-                          _PillButton(
-                            icon: Icons.favorite_border,
-                            text: "Save",
-                            onTap: () {
-                              // TODO
-                            },
-                          ),
-                          const SizedBox(width: 10),
-                          _PillButton(
-                            icon: Icons.share_outlined,
-                            text: "Share episode",
-                            onTap: () {
-                              // TODO: use share_plus if you want
-                            },
-                          ),
-                        ],
+                        ),
                       ),
 
                       const SizedBox(height: 14),

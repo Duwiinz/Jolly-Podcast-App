@@ -30,7 +30,7 @@ class HttpClientService {
       Uri.parse(url),
       headers: _headers(),
       body: jsonEncode(body),
-    )      .timeout(const Duration(seconds: 15));
+    )      .timeout(const Duration(seconds: 60));
 
   log("HttpClientService: Response status: ${response.statusCode}", name: "HttpClientService");
   log("HttpClientService: Response body: ${response.body}", name: "HttpClientService");

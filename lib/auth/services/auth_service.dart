@@ -83,4 +83,23 @@ class AuthService {
     return LoginResponseModel.fromJson(decoded);
   }
 
+  Future<void> logout() async {
+  log('[AuthService] logout called');
+
+  final response = await client.post(
+    ApiRoutes.logout, // https://api.jollypodcast.net/api/auth/logout
+    body: {}, // keep empty body
+  );
+
+  final decoded = jsonDecode(response.body);
+
+  if (response.statusCode == 200) return;
+
+  if (response.statusCode == 401) {
+    throw Exception(decoded['message'] ?? 'Unauthenticated.');
+  }
+
+  throw Exception(decoded['message'] ?? 'Logout failed.');
+}
+
 }

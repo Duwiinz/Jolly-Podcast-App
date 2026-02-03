@@ -12,11 +12,13 @@ class CustomTextFormField extends StatelessWidget {
   final TextStyle? hintStyle;
   final TextEditingController? controller;
   final TextInputType keyboardType;
+  //final TextInputAction? textInputAction; // ✅ ADD
   final bool obscureText;
   final Widget? prefixIcon;
   final Widget? suffixIcon;
   final String? Function(String?)? validator;
   final void Function(String)? onChanged;
+  //final void Function(String)? onFieldSubmitted; // ✅ ADD
   final int? maxLines;
   final bool readOnly;
   final VoidCallback? onTap;
@@ -35,11 +37,13 @@ class CustomTextFormField extends StatelessWidget {
     this.hintStyle,
     this.controller,
     this.keyboardType = TextInputType.text,
+    //this.textInputAction, // ✅ ADD
     this.obscureText = false,
     this.prefixIcon,
     this.suffixIcon,
     this.validator,
     this.onChanged,
+    //this.onFieldSubmitted, // ✅ ADD
     this.maxLines = 1,
     this.readOnly = false,
     this.onTap,

@@ -36,9 +36,7 @@ Future<void> setupDependencies() async {
   );
 
   // ✅ Cubits MUST be factories
-  getIt.registerFactory<AuthCubit>(
-    () => AuthCubit(getIt<AuthService>()),
-  );
+getIt.registerFactory<AuthCubit>(() => AuthCubit(getIt<AuthService>()));
 
   getIt.registerFactory<EpisodeCubit>(
     () => EpisodeCubit(getIt<EpisodeService>()),
